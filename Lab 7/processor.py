@@ -1,19 +1,64 @@
+
 def sanitize_meter_id(meter_id):
+    if not isinstance(meter_id, str):
+        return ""
+
     meter_id = meter_id.strip()
     for ch in ['!', '@', '#', '$', '%']:
         meter_id = meter_id.replace(ch, '')
+
     return meter_id.upper()
 
+
 def parse_consumption_readings(readings_csv):
-    readings = readings_csv.split(',')
-    return [int(r) for r in readings]
+    if not isinstance(readings_csv, str):
+        return []
+
+    if not readings_csv.strip():
+        return []
+
+    readings = []
+
+    for r in readings_csv.split(','):
+        r = r.strip()
+
+        if not r:
+            continue
+
+        try:
+            readings.append(int(r))
+        except ValueError:
+            continue
+
+    return readings
+
 
 def format_billing_summary(account_record):
+    if not isinstance(account_record, str):
+        return "Invalid account record"
+
     parts = account_record.split(':')
+
+    if len(parts) != 3:
+        return "Invalid account record"
+
     customer_name = parts[0].strip()
-    units = int(parts[1])
+    units_text = parts[1].strip()
     zone = parts[2].strip()
+
+    if not customer_name or not zone:
+        return "Invalid account record"
+
+    try:
+        units = int(units_text)
+    except ValueError:
+        return "Invalid account record"
+
+    if units < 0:
+        return "Invalid account record"
+
     return f"Customer {customer_name} billed {units * 2} USD in {zone}"
+
 
 def main():
     print("==== Running sanitize_meter_id ====")
@@ -30,6 +75,7 @@ def main():
     summary_input = input("Enter account record (Name:Usage:Zone): ")
     summary = format_billing_summary(summary_input)
     print("Billing Summary:", summary)
+
 
 if __name__ == "__main__":
     main()
